@@ -86,6 +86,7 @@ class MAML:
 
                 task_outputa = self.forward(inputa, weights, reuse=reuse)  # only reuse on the first iter
                 task_lossa = self.loss_func(task_outputa, labela)
+                task_lossb_for_testing = self.loss_func(self.forward(inputb, weights, reuse=reuse), labelb)
 
                 grads = tf.gradients(task_lossa, list(weights.values()))
                 if FLAGS.stop_grad:
@@ -108,6 +109,8 @@ class MAML:
                     task_lossesb.append(self.loss_func(output, labelb))
 
                 task_output = [task_outputa, task_outputbs, task_lossa, task_lossesb]
+                if not FLAGS.train:
+                    task_output = [task_outputa, task_outputbs, task_lossb_for_testing, task_lossesb]
 
                 if self.classification:
                     task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1), tf.argmax(labela, 1))

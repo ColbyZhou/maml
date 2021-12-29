@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Usage Instructions:
     10-shot sinusoid:
@@ -193,6 +194,13 @@ def test(model, saver, sess, exp_string, data_generator, test_num_updates=None):
             result = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
         else:  # this is for sinusoid
             result = sess.run([model.total_loss1] +  model.total_losses2, feed_dict)
+
+        ### testing的时候, model.total_loss1代表训练好的模型在测试集的inputa(support set)上的loss. (即update0)
+        ### model.total_losses2的第X个数据(从1开始)代表训练好的模型继续在测试集的inputa(support set)上更新了X次梯度之后(fine tune), 新模型在测试集的inputb(query set)上的loss. (即updateX)
+
+        ### 虽然update0和updateX不是在同一个数据中计算出来的, 但是测试集的support set和query set本身是iid的, 所以这个loss是可比的
+        ### 修改maml.py代码之后, update0代表的就是训练好的模型在测试集的inputb(query set)上的loss, 与updateX是在同一个数据集计算出来的
+        print(result)
         metaval_accuracies.append(result)
 
     metaval_accuracies = np.array(metaval_accuracies)
